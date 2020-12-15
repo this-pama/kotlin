@@ -5,7 +5,6 @@
 
 package org.jetbrains.kotlin.caching
 
-import org.gradle.api.Project
 import java.io.File
 
 interface CompilerArgumentsBucketConverter<From, To> {
@@ -52,7 +51,6 @@ class FlatToRawCompilerArgumentsBucketConverter(val classLoader: ClassLoader) :
             this += it.second.joinToString(File.pathSeparator)
         }
 
-        val singleArgumentAnnotationInfos = dividedPropertiesWithArgumentAnnotationInfo.singlePropertiesToArgumentAnnotation.values
         from.singleArguments.entries.forEach { (k, v) ->
             if (k.startsWith("-X") && k.length > 2) {
                 this += "$k=$v"
@@ -63,7 +61,7 @@ class FlatToRawCompilerArgumentsBucketConverter(val classLoader: ClassLoader) :
         }
 
         val multipleArgumentAnnotationInfos = dividedPropertiesWithArgumentAnnotationInfo.multiplePropertiesToArgumentAnnotation.values
-        from.multipleArguments.entries.forEach { (k, v) ->
+        from.multipleArguments.entries.map { (k, v) ->
             val argument = multipleArgumentAnnotationInfos.first { it.suitArgument(k) != null }
             val value = v.joinToString(argument.delimiter)
             if (k.startsWith("-X") && k.length > 2) {
@@ -114,7 +112,7 @@ class RawToFlatCompilerArgumentsBucketConverter(val classLoader: ClassLoader) :
             flattenSingleArguments += it.processArgumentWithInfo(from, processedArguments)
         }
         val flattenMultipleArguments = mutableMapOf<String, List<String>>()
-        multiplePropertiesToArgumentAnnotation.values.forEach() { info ->
+        multiplePropertiesToArgumentAnnotation.values.forEach { info ->
             flattenMultipleArguments += info.processArgumentWithInfo(from, processedArguments)
                 .map { it.key to it.value.split(info.delimiter) }
         }
